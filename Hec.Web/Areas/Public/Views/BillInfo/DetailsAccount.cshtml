@@ -183,6 +183,8 @@
     var plotBandValue = 0;
     var averageHouseValue = 0;
 
+    // NOTE: This calculation uses the legacy tariff block method for compatibility
+    // For new calculations, refer to the complex billing structure in UsageCalculator
     function getAverageHouseType(houseTypeCode) {
         // Get tariff block
         var tariffTiers = 0, tariffRemaining = 0;

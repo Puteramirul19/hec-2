@@ -147,19 +147,37 @@ namespace Hec.Web.Areas.Public.Controllers
 
 
         /// <summary>
-        /// Read Tariff Block
+        /// Read Tariff Block with Complex Billing Components (Updated July 2025)
         /// </summary>
-        /// <returns>TariffBlock</returns>
+        /// <returns>TariffBlock with Complex Billing Structure</returns>
         public ActionResult ReadTariff()
         {
+            // Keep existing energy tariff blocks
             var list = db.Tariffs.OrderBy(x => x.Sequence).ToList();
             var count = list.Count();
 
-            return Json(new
+            // New billing components as per July 2025 update
+            var billingComponents = new
             {
-                tiers = list.Take(count - 1).Select(x => new { boundary = x.BoundryTier, rate = x.TariffPerKWh }),
-                remaining = list[count - 1].TariffPerKWh
-            });
+                // Energy tariff (existing structure)
+                energyTiers = list.Take(count - 1).Select(x => new { boundary = x.BoundryTier, rate = x.TariffPerKWh }),
+                energyRemaining = list[count - 1].TariffPerKWh,
+
+                // Additional billing components (as per Excel)
+                components = new
+                {
+                    afa = new { rate = 0.0000, threshold = 600, description = "Automated Fuel Cost Adjustment (AFA)" },
+                    capacity = new { rate = 0.0329, threshold = 600, description = "Capacity Charge" },
+                    network = new { rate = 0.0963, threshold = 600, description = "Network Charge" },
+                    retail = new { fixedRate = 10.00, threshold = 600, description = "Retail Charge (RM/month)" },
+                    eei = new { rate = -0.0300, maxKwh = 1000, description = "Energy Efficiency Incentive" },
+                    serviceTax = new { rate = 0.08, threshold = 600, description = "Service Tax (8%)" },
+                    reFund = new { rate = 0.016, threshold = 300, description = "RE Fund (KWTBB 1.6%)" },
+                    rebate = new { rate = 0.10, description = "Rebate (10%)" }
+                }
+            };
+
+            return Json(billingComponents);
         }
 
         /// <summary>

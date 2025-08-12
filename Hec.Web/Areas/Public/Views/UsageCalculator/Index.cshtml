@@ -104,11 +104,11 @@
                                 {
                                     if (houseTyp.IsActive.Equals(true) && houseTyp.HouseCategoryId.Equals(houseCat.Id))
                                     {
-                                    <a href="javascript:;" 
-                                       id="@houseTyp.HouseTypeCode" 
-                                       data-bind="value: data.@houseTyp.HouseTypeCode, click: selectRoom" 
-                                       data-house-type="@houseTyp.HouseTypeCode" 
-                                       data-img-default="@houseTyp.FileId" 
+                                    <a href="javascript:;"
+                                       id="@houseTyp.HouseTypeCode"
+                                       data-bind="value: data.@houseTyp.HouseTypeCode, click: selectRoom"
+                                       data-house-type="@houseTyp.HouseTypeCode"
+                                       data-img-default="@houseTyp.FileId"
                                        data-img-big="@houseTyp.FileHeaderId">
                                         <div class="house one-floor">
                                             <div><img src="/FilePublic?fileId=@houseTyp.FileId" style="max-height:95px; padding-top:3px;"/></div>
@@ -339,8 +339,9 @@
                                             <small>
                                                 - Disclaimer : <br />
                                                 &nbsp;> The Energy Usage Calculator is used as a guide and does not reflect your current electric bill<br />
-                                                &nbsp;> The rate used to calculate each appliances is based on the average tariff for residential customer effective January 2014<br />
-                                                &nbsp;> The Total Monthly Usage amount is calculated based on the latest Tariff Block
+                                                &nbsp;> The calculation is based on the new complex billing structure effective July 2025<br />
+                                                &nbsp;> The Total Monthly Usage includes Energy, AFA, Capacity, Network, Retail charges, Energy Efficiency Incentive, Rebate, Service Tax and RE Fund<br />
+                                                &nbsp;> Rates are subject to change as approved by the Malaysian Government
                                             </small>
 
                                         </td>
@@ -1171,14 +1172,13 @@
             var totalkWh = 0;
 
             // Formula:
-            // Estimated Cost = ((Usage per day * Number of days used a months * Watts) / 1000 )) * 0.3166
-            // 0.3166 = Average Cost Per kWh (DOMESTIC)
+            // New Complex Billing Structure as per July 2025 update
+            // Based on 'Domestic General Calculator 30 June 2025 1.xlsx' file
             function totalUsage() {
                 var total = 0;
 
                 // Get each room data
                 $.each(viewModel.get("Rooms"), function (i, room) {
-
                     // Get each appliance for each room data
                     $.each(room.get("Appliances"), function (j, appliance) {
                         var sum = 0;
@@ -1202,40 +1202,105 @@
                 });
 
                 totalkWh = kendo.toString(parseFloat(total) / 1000, "0");
+                var totalKwh = parseFloat(total) / 1000;
 
-                // Calculate total bill per month (RM) using Tariff Block
-                // Base on 'HEC2 - CalculationV3.xlsx' file
-                var balance = totalkWh;
-                var totalCharge = 0;
+                // ===== NEW COMPLEX BILLING CALCULATION (July 2025) =====
+
+                // 1. ENERGY COST (Using existing tariff blocks)
+                var energyBalance = totalKwh;
+                var energyCost = 0;
                 for (var i = 0; i < tariffTiers.length; i++) {
                     var boundary = tariffTiers[i].boundary;
                     var rate = tariffTiers[i].rate;
-                    //console.log({
-                    //    i: i,
-                    //    boundary: boundary,
-                    //    rate: rate,
-                    //    balance: balance,
-                    //    totalCharge: totalCharge
-                    //});
-                    if (balance > boundary) {
-                        totalCharge += boundary * rate;
-                        balance = balance - boundary;
+
+                    if (energyBalance > boundary) {
+                        energyCost += boundary * rate;
+                        energyBalance = energyBalance - boundary;
                     } else {
-                        totalCharge += balance * rate;
-                        balance = 0
+                        energyCost += energyBalance * rate;
+                        energyBalance = 0;
                         break;
                     }
                 }
-                //console.log({
-                //    balance: balance,
-                //    totalCharge: totalCharge
-                //});
-                if (balance > 0) totalCharge += balance * tariffRemaining;
-                //console.log(totalCharge);
+                if (energyBalance > 0) energyCost += energyBalance * tariffRemaining;
+
+                // 2. AFA (Automated Fuel Cost Adjustment) - 0.0000 RM/kWh as of July 2025
+                var afaCost = 0;
+                if (totalKwh > 600) {
+                    afaCost = totalKwh * 0.0000; // Currently 0 as per July 2025
+                }
+
+                // 3. CAPACITY CHARGE - 3.29 sen/kWh
+                var capacityCost = 0;
+                if (totalKwh > 600) {
+                    capacityCost = totalKwh * 0.0329;
+                }
+
+                // 4. NETWORK CHARGE - 9.63 sen/kWh  
+                var networkCost = 0;
+                if (totalKwh > 600) {
+                    networkCost = totalKwh * 0.0963;
+                }
+
+                // 5. RETAIL CHARGE - RM 10.00/month (prorated for 30 days)
+                var retailCost = 0;
+                if (totalKwh > 600) {
+                    retailCost = (30 / 30) * 10.00; // Assuming 30-day billing period
+                }
+
+                // 6. ENERGY EFFICIENCY INCENTIVE - 3.00 sen/kWh discount (applicable 0-1000 kWh)
+                var eeiDiscount = 0;
+                if (totalKwh <= 1000) {
+                    eeiDiscount = totalKwh * 0.0300; // This is a discount (negative)
+                }
+
+                // 7. SUBTOTAL before taxes and rebates
+                var subtotal = energyCost + afaCost + capacityCost + networkCost + retailCost - eeiDiscount;
+
+                // 8. REBATE (10%) - Applied to subtotal
+                var rebateDiscount = subtotal * 0.10;
+
+                // 9. AFTER REBATE
+                var afterRebate = subtotal - rebateDiscount;
+
+                // 10. SERVICE TAX (8%) - Only if consumption > 600kWh
+                var serviceTax = 0;
+                if (totalKwh > 600) {
+                    serviceTax = afterRebate * 0.08;
+                }
+
+                // 11. RE FUND (KWTBB 1.6%) - Only if consumption > 300kWh (applied to specific components)
+                var reFund = 0;
+                if (totalKwh > 300) {
+                    // Applied to: Energy + Capacity + Network + EEI (without AFA and Retail Charge)
+                    var reFundBase = energyCost + capacityCost + networkCost - eeiDiscount;
+                    reFund = reFundBase * 0.016;
+                }
+
+                // 12. FINAL TOTAL
+                var totalCharge = afterRebate + serviceTax + reFund;
+
+                // ===== LOGGING FOR DEBUGGING (can be removed in production) =====
+                /* 
+                console.log("=== BILLING BREAKDOWN ===");
+                console.log("Total kWh:", totalKwh);
+                console.log("1. Energy Cost:", energyCost.toFixed(2));
+                console.log("2. AFA Cost:", afaCost.toFixed(2));
+                console.log("3. Capacity Cost:", capacityCost.toFixed(2));
+                console.log("4. Network Cost:", networkCost.toFixed(2));
+                console.log("5. Retail Cost:", retailCost.toFixed(2));
+                console.log("6. EEI Discount:", eeiDiscount.toFixed(2));
+                console.log("7. Subtotal:", subtotal.toFixed(2));
+                console.log("8. Rebate Discount:", rebateDiscount.toFixed(2));
+                console.log("9. After Rebate:", afterRebate.toFixed(2));
+                console.log("10. Service Tax:", serviceTax.toFixed(2));
+                console.log("11. RE Fund:", reFund.toFixed(2));
+                console.log("12. FINAL TOTAL:", totalCharge.toFixed(2));
+                */
 
                 // Set view model value
-                viewModel.set("TotalkWh", kendo.toString(parseFloat(total) / 1000, "0"));
-                viewModel.set("TotalkWhDay", kendo.toString((parseFloat(total) / 1000) / 30, "n"));
+                viewModel.set("TotalkWh", kendo.toString(totalKwh, "0"));
+                viewModel.set("TotalkWhDay", kendo.toString(totalKwh / 30, "n"));
                 viewModel.set("TotalUsage", kendo.toString(totalCharge, "n"));
                 viewModel.set("TotalUsageDay", kendo.toString(parseFloat(totalCharge) / 30, "n"));
 

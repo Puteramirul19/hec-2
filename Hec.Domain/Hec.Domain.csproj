@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Hec</RootNamespace>
     <AssemblyName>Hec.Domain</AssemblyName>
-    <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
     <NuGetPackageImportStamp>
@@ -96,6 +96,7 @@
     <Compile Include="Auth\MockDirectoryService.cs" />
     <Compile Include="Entities\Appliance.cs" />
     <Compile Include="Entities\Bill.cs" />
+    <Compile Include="Entities\BillingComponent.cs" />
     <Compile Include="Entities\ContractAccount.cs" />
     <Compile Include="Entities\EmailQueue.cs" />
     <Compile Include="Entities\EmailTemplate.cs" />
