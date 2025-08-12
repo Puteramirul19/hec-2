@@ -170,7 +170,7 @@ namespace Hec.Web.Areas.Public.Controllers
                     capacity = new { rate = 0.0329, threshold = 600, description = "Capacity Charge" },
                     network = new { rate = 0.0963, threshold = 600, description = "Network Charge" },
                     retail = new { fixedRate = 10.00, threshold = 600, description = "Retail Charge (RM/month)" },
-                    eei = new { rate = -0.0300, maxKwh = 1000, description = "Energy Efficiency Incentive" },
+                    eei = new { rate = -0.0400, maxKwh = 1000, description = "Energy Efficiency Incentive" },
                     serviceTax = new { rate = 0.08, threshold = 600, description = "Service Tax (8%)" },
                     reFund = new { rate = 0.016, threshold = 300, description = "RE Fund (KWTBB 1.6%)" },
                     rebate = new { rate = 0.10, description = "Rebate (10%)" }
