@@ -148,6 +148,7 @@ namespace Hec.Web.Areas.Public.Controllers
 
         /// <summary>
         /// Read Tariff Block with Complex Billing Components (Updated July 2025)
+        /// Maintains backward compatibility with existing code
         /// </summary>
         /// <returns>TariffBlock with Complex Billing Structure</returns>
         public ActionResult ReadTariff()
@@ -156,12 +157,19 @@ namespace Hec.Web.Areas.Public.Controllers
             var list = db.Tariffs.OrderBy(x => x.Sequence).ToList();
             var count = list.Count();
 
-            // New billing components as per July 2025 update
+            var energyTiers = list.Take(count - 1).Select(x => new { boundary = x.BoundryTier, rate = x.TariffPerKWh });
+            var energyRemaining = list[count - 1].TariffPerKWh;
+
+            // Return both old and new formats for compatibility
             var billingComponents = new
             {
-                // Energy tariff (existing structure)
-                energyTiers = list.Take(count - 1).Select(x => new { boundary = x.BoundryTier, rate = x.TariffPerKWh }),
-                energyRemaining = list[count - 1].TariffPerKWh,
+                // OLD FORMAT (for backward compatibility)
+                tiers = energyTiers,
+                remaining = energyRemaining,
+
+                // NEW FORMAT (for new complex billing)
+                energyTiers = energyTiers,
+                energyRemaining = energyRemaining,
 
                 // Additional billing components (as per Excel)
                 components = new
