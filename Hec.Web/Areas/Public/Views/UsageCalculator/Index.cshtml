@@ -615,16 +615,18 @@
                 });
             }
 
-            // Get tariff block
-            var tariffTiers = 0, tariffRemaining = 0;
+            // Get tariff block and billing components (Updated July 2025)
+            var tariffTiers = 0, tariffRemaining = 0, billingComponents = null;
             $.ajax({
                 url: "@Url.Action("ReadTariff", "UsageCalculator")",
                 type: 'GET',
                 dataType: 'json',
                 async: false,
                 success: function (data, textStatus, jqXHR) {
-                    tariffTiers = data.tiers;
-                    tariffRemaining = data.remaining;
+                    // Handle new structure (July 2025 update)
+                    tariffTiers = data.energyTiers;
+                    tariffRemaining = data.energyRemaining;
+                    billingComponents = data.components;
                 }
             });
 
@@ -1236,7 +1238,7 @@
                     capacityCost = totalKwh * 0.0329;
                 }
 
-                // 4. NETWORK CHARGE - 9.63 sen/kWh  
+                // 4. NETWORK CHARGE - 9.63 sen/kWh
                 var networkCost = 0;
                 if (totalKwh > 600) {
                     networkCost = totalKwh * 0.0963;
@@ -1281,7 +1283,7 @@
                 var totalCharge = afterRebate + serviceTax + reFund;
 
                 // ===== LOGGING FOR DEBUGGING (can be removed in production) =====
-                /* 
+                /*
                 console.log("=== BILLING BREAKDOWN ===");
                 console.log("Total kWh:", totalKwh);
                 console.log("1. Energy Cost:", energyCost.toFixed(2));
