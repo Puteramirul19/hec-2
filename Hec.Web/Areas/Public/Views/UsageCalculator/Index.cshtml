@@ -1173,8 +1173,9 @@
             var dataAppliance = [];
             var totalkWh = 0;
 
+
             // Formula:
-            // New Complex Billing Structure as per July 2025 update
+            // New Complex Billing Structure as per July 2025 update with Tiered EEI
             // Based on 'Domestic General Calculator 30 June 2025 1.xlsx' file
             function totalUsage() {
                 var total = 0;
@@ -1232,16 +1233,16 @@
                     afaCost = totalKwh * 0.0000; // Currently 0 as per July 2025
                 }
 
-                // 3. CAPACITY CHARGE - 3.29 sen/kWh
+                // 3. CAPACITY CHARGE - 4.55 sen/kWh (corrected from PDF)
                 var capacityCost = 0;
                 if (totalKwh > 600) {
-                    capacityCost = totalKwh * 0.0329;
+                    capacityCost = totalKwh * 0.04550;
                 }
 
-                // 4. NETWORK CHARGE - 9.63 sen/kWh
+                // 4. NETWORK CHARGE - 12.85 sen/kWh (corrected from PDF)
                 var networkCost = 0;
                 if (totalKwh > 600) {
-                    networkCost = totalKwh * 0.0963;
+                    networkCost = totalKwh * 0.12850;
                 }
 
                 // 5. RETAIL CHARGE - RM 10.00/month (prorated for 30 days)
@@ -1250,10 +1251,41 @@
                     retailCost = (30 / 30) * 10.00; // Assuming 30-day billing period
                 }
 
-                // 6. ENERGY EFFICIENCY INCENTIVE - 3.00 sen/kWh discount (applicable 0-1000 kWh)
+                // 6. ENERGY EFFICIENCY INCENTIVE - CORRECTED TIERED STRUCTURE (applicable 0-1000 kWh)
                 var eeiDiscount = 0;
                 if (totalKwh <= 1000) {
-                    eeiDiscount = totalKwh * 0.0400; // This is a discount (negative) - CORRECTED from Excel
+                    // EEI Tiered rates (in RM/kWh) - these are DISCOUNT rates
+                    var eeiTiers = [
+                        { max: 200, rate: 0.25 },    // 0-200 kWh: -0.25 RM/kWh
+                        { max: 250, rate: 0.245 },   // 201-250 kWh: -0.245 RM/kWh
+                        { max: 300, rate: 0.225 },   // 251-300 kWh: -0.225 RM/kWh
+                        { max: 350, rate: 0.21 },    // 301-350 kWh: -0.21 RM/kWh
+                        { max: 400, rate: 0.17 },    // 351-400 kWh: -0.17 RM/kWh
+                        { max: 450, rate: 0.145 },   // 401-450 kWh: -0.145 RM/kWh
+                        { max: 500, rate: 0.12 },    // 451-500 kWh: -0.12 RM/kWh
+                        { max: 550, rate: 0.105 },   // 501-550 kWh: -0.105 RM/kWh
+                        { max: 600, rate: 0.09 },    // 551-600 kWh: -0.09 RM/kWh
+                        { max: 650, rate: 0.075 },   // 601-650 kWh: -0.075 RM/kWh
+                        { max: 700, rate: 0.055 },   // 651-700 kWh: -0.055 RM/kWh
+                        { max: 750, rate: 0.045 },   // 701-750 kWh: -0.045 RM/kWh
+                        { max: 800, rate: 0.04 },    // 751-800 kWh: -0.04 RM/kWh
+                        { max: 850, rate: 0.025 },   // 801-850 kWh: -0.025 RM/kWh
+                        { max: 900, rate: 0.01 },    // 851-900 kWh: -0.01 RM/kWh
+                        { max: 1000, rate: 0.005 }   // 901-1000 kWh: -0.005 RM/kWh
+                    ];
+
+                    var remainingKwh = totalKwh;
+                    var previousMax = 0;
+
+                    for (var i = 0; i < eeiTiers.length && remainingKwh > 0; i++) {
+                        var tierSize = eeiTiers[i].max - previousMax;
+                        var tierConsumption = Math.min(remainingKwh, tierSize);
+                        eeiDiscount += tierConsumption * eeiTiers[i].rate;
+                        remainingKwh -= tierConsumption;
+                        previousMax = eeiTiers[i].max;
+
+                        if (totalKwh <= eeiTiers[i].max) break;
+                    }
                 }
 
                 // 7. SUBTOTAL before taxes and rebates
@@ -1282,29 +1314,34 @@
                 // 12. FINAL TOTAL
                 var totalCharge = afterRebate + serviceTax + reFund;
 
-                // ===== LOGGING FOR DEBUGGING (can be removed in production) =====
+                // Note: No minimum bill amount as per client specification
+                // Negative bills mean customer pays nothing or gets credit
+
+                // ===== LOGGING FOR DEBUGGING (can be enabled for testing) =====
                 /*
                 console.log("=== BILLING BREAKDOWN ===");
                 console.log("Total kWh:", totalKwh);
-                console.log("1. Energy Cost:", energyCost.toFixed(2));
-                console.log("2. AFA Cost:", afaCost.toFixed(2));
-                console.log("3. Capacity Cost:", capacityCost.toFixed(2));
-                console.log("4. Network Cost:", networkCost.toFixed(2));
-                console.log("5. Retail Cost:", retailCost.toFixed(2));
-                console.log("6. EEI Discount:", eeiDiscount.toFixed(2));
-                console.log("7. Subtotal:", subtotal.toFixed(2));
-                console.log("8. Rebate Discount:", rebateDiscount.toFixed(2));
-                console.log("9. After Rebate:", afterRebate.toFixed(2));
-                console.log("10. Service Tax:", serviceTax.toFixed(2));
-                console.log("11. RE Fund:", reFund.toFixed(2));
+                console.log("1. Energy Cost:", energyCost.toFixed(4));
+                console.log("2. AFA Cost:", afaCost.toFixed(4));
+                console.log("3. Capacity Cost:", capacityCost.toFixed(4));
+                console.log("4. Network Cost:", networkCost.toFixed(4));
+                console.log("5. Retail Cost:", retailCost.toFixed(4));
+                console.log("6. EEI Discount (Tiered):", eeiDiscount.toFixed(4));
+                console.log("7. Subtotal:", subtotal.toFixed(4));
+                console.log("8. Rebate Discount:", rebateDiscount.toFixed(4));
+                console.log("9. After Rebate:", afterRebate.toFixed(4));
+                console.log("10. Service Tax:", serviceTax.toFixed(4));
+                console.log("11. RE Fund:", reFund.toFixed(4));
                 console.log("12. FINAL TOTAL:", totalCharge.toFixed(2));
                 */
 
                 // Set view model value
                 viewModel.set("TotalkWh", kendo.toString(totalKwh, "0"));
                 viewModel.set("TotalkWhDay", kendo.toString(totalKwh / 30, "n"));
-                viewModel.set("TotalUsage", kendo.toString(totalCharge, "n"));
-                viewModel.set("TotalUsageDay", kendo.toString(parseFloat(totalCharge) / 30, "n"));
+                // Handle negative bills - show 0.00 if negative or actual amount if positive
+                var displayTotal = Math.max(totalCharge, 0);
+                viewModel.set("TotalUsage", kendo.toString(displayTotal, "n"));
+                viewModel.set("TotalUsageDay", kendo.toString(parseFloat(displayTotal) / 30, "n"));
 
                 // Return data to function
                 return { "total": total, "totalkWh": totalkWh };
