@@ -175,8 +175,8 @@ namespace Hec.Web.Areas.Public.Controllers
                 components = new
                 {
                     afa = new { rate = 0.0000, threshold = 600, description = "Automated Fuel Cost Adjustment (AFA)" },
-                    capacity = new { rate = 0.0329, threshold = 600, description = "Capacity Charge" },
-                    network = new { rate = 0.0963, threshold = 600, description = "Network Charge" },
+                    capacity = new { rate = 0.04550, threshold = 600, description = "Capacity Charge" },
+                    network = new { rate = 0.12850, threshold = 600, description = "Network Charge" },
                     retail = new { fixedRate = 10.00, threshold = 600, description = "Retail Charge (RM/month)" },
 
                     // CORRECTED: Tiered EEI structure instead of fixed rate
