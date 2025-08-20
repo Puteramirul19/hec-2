@@ -2,13 +2,13 @@
     ViewBag.Title = "Index";
     ViewBag.BodyClass = "skin-blue sidebar-mini appliance-store";
     ViewBag.ActiveClass = "energy-calculator";
-    Layout = "~/Areas/Public/Views/Shared/_LayoutPublic_New.cshtml";
+    // Layout = "~/Areas/Public/Views/Shared/_LayoutPublic_New.cshtml";
+    Layout = "~/Areas/Public/Views/Shared/_LayoutPublic.cshtml";
 }
 <style>
     .collapse-header {
-        height:auto;
+        height: auto;
     }
-
 </style>
 <div id="view-container"></div>
 
@@ -56,7 +56,7 @@
 
     </div>
 </div>
-<!-- end floating check appliance wattage -->  
+<!-- end floating check appliance wattage -->
 
 <script id="view-template" type="text/x-kendo-template">
     <section>
@@ -1314,8 +1314,12 @@
                 // 12. FINAL TOTAL
                 var totalCharge = afterRebate + serviceTax + reFund;
 
-                // Note: No minimum bill amount as per client specification
-                // Negative bills mean customer pays nothing or gets credit
+                // 13. MINIMUM BILL PROTECTION (TNB minimum monthly charge is RM 3.00)
+                var minimumBill = 3.00;
+                if (totalCharge < minimumBill) {
+                    totalCharge = minimumBill;
+                }
+
 
                 // ===== LOGGING FOR DEBUGGING (can be enabled for testing) =====
                 /*
@@ -1338,10 +1342,8 @@
                 // Set view model value
                 viewModel.set("TotalkWh", kendo.toString(totalKwh, "0"));
                 viewModel.set("TotalkWhDay", kendo.toString(totalKwh / 30, "n"));
-                // Handle negative bills - show 0.00 if negative or actual amount if positive
-                var displayTotal = Math.max(totalCharge, 0);
-                viewModel.set("TotalUsage", kendo.toString(displayTotal, "n"));
-                viewModel.set("TotalUsageDay", kendo.toString(parseFloat(displayTotal) / 30, "n"));
+                viewModel.set("TotalUsage", kendo.toString(totalCharge, "n"));
+                viewModel.set("TotalUsageDay", kendo.toString(parseFloat(totalCharge) / 30, "n"));
 
                 // Return data to function
                 return { "total": total, "totalkWh": totalkWh };

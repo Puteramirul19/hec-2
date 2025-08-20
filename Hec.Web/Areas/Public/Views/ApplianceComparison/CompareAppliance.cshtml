@@ -3,7 +3,6 @@
     ViewBag.Title = "Index";
     ViewBag.BodyClass = "skin-blue sidebar-mini bill-calculator";
     ViewBag.ActiveClass = "appliance-calculator";
-    Layout = "~/Areas/Public/Views/Shared/_LayoutPublic_New.cshtml";
 }
 
 <div id="view-container"></div>
@@ -182,7 +181,7 @@
                     expectedyears: 0,
                     usageperday: 0,
                     numdayspermonth: 0,
-                    effcostperkwh: 0.3976,
+                    effcostperkwh: 0.445,
 
                     appname1: "",
                     app1_price: 0,
@@ -264,7 +263,7 @@
                         this.set("data.totalcostowner", "RM " + kendo.toString(gettotalcost, "n"));
                         this.set("data.appliancename", d.appname2 !== "" ? d.appname2 : 2);
                     }
-                    else if (ttlcostownership_app1 < ttlcostownership_app2)  {
+                    else if (ttlcostownership_app1 < ttlcostownership_app2) {
                         getsavingday = estdaycost_app2 - estdaycost_app1;
                         getsavingmonth = estmonthlycost_app2 - estmonthlycost_app1;
                         getsavingyear = estyearlycost_app2 - estyearlycost_app1;

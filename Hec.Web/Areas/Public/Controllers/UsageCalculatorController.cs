@@ -97,7 +97,7 @@ namespace Hec.Web.Areas.Public.Controllers
         {
             // Get random appliance tips
             List<TipsList> energyTips = new List<TipsList>();
-            if(top5appliance == null)
+            if (top5appliance == null)
             {
                 return Json(energyTips); ;
             }
@@ -181,23 +181,23 @@ namespace Hec.Web.Areas.Public.Controllers
 
                     // CORRECTED: Tiered EEI structure instead of fixed rate
                     eeiTiers = new[] {
-                new { maxKwh = 200, rate = 0.25, description = "EEI Tier 1: 0-200 kWh at -0.25 RM/kWh" },
-                new { maxKwh = 250, rate = 0.245, description = "EEI Tier 2: 201-250 kWh at -0.245 RM/kWh" },
-                new { maxKwh = 300, rate = 0.225, description = "EEI Tier 3: 251-300 kWh at -0.225 RM/kWh" },
-                new { maxKwh = 350, rate = 0.21, description = "EEI Tier 4: 301-350 kWh at -0.21 RM/kWh" },
-                new { maxKwh = 400, rate = 0.17, description = "EEI Tier 5: 351-400 kWh at -0.17 RM/kWh" },
-                new { maxKwh = 450, rate = 0.145, description = "EEI Tier 6: 401-450 kWh at -0.145 RM/kWh" },
-                new { maxKwh = 500, rate = 0.12, description = "EEI Tier 7: 451-500 kWh at -0.12 RM/kWh" },
-                new { maxKwh = 550, rate = 0.105, description = "EEI Tier 8: 501-550 kWh at -0.105 RM/kWh" },
-                new { maxKwh = 600, rate = 0.09, description = "EEI Tier 9: 551-600 kWh at -0.09 RM/kWh" },
-                new { maxKwh = 650, rate = 0.075, description = "EEI Tier 10: 601-650 kWh at -0.075 RM/kWh" },
-                new { maxKwh = 700, rate = 0.055, description = "EEI Tier 11: 651-700 kWh at -0.055 RM/kWh" },
-                new { maxKwh = 750, rate = 0.045, description = "EEI Tier 12: 701-750 kWh at -0.045 RM/kWh" },
-                new { maxKwh = 800, rate = 0.04, description = "EEI Tier 13: 751-800 kWh at -0.04 RM/kWh" },
-                new { maxKwh = 850, rate = 0.025, description = "EEI Tier 14: 801-850 kWh at -0.025 RM/kWh" },
-                new { maxKwh = 900, rate = 0.01, description = "EEI Tier 15: 851-900 kWh at -0.01 RM/kWh" },
-                new { maxKwh = 1000, rate = 0.005, description = "EEI Tier 16: 901-1000 kWh at -0.005 RM/kWh" }
-            },
+                        new { maxKwh = 200, rate = 0.25, description = "EEI Tier 1: 0-200 kWh at -0.25 RM/kWh" },
+                        new { maxKwh = 250, rate = 0.245, description = "EEI Tier 2: 201-250 kWh at -0.245 RM/kWh" },
+                        new { maxKwh = 300, rate = 0.225, description = "EEI Tier 3: 251-300 kWh at -0.225 RM/kWh" },
+                        new { maxKwh = 350, rate = 0.21, description = "EEI Tier 4: 301-350 kWh at -0.21 RM/kWh" },
+                        new { maxKwh = 400, rate = 0.17, description = "EEI Tier 5: 351-400 kWh at -0.17 RM/kWh" },
+                        new { maxKwh = 450, rate = 0.145, description = "EEI Tier 6: 401-450 kWh at -0.145 RM/kWh" },
+                        new { maxKwh = 500, rate = 0.12, description = "EEI Tier 7: 451-500 kWh at -0.12 RM/kWh" },
+                        new { maxKwh = 550, rate = 0.105, description = "EEI Tier 8: 501-550 kWh at -0.105 RM/kWh" },
+                        new { maxKwh = 600, rate = 0.09, description = "EEI Tier 9: 551-600 kWh at -0.09 RM/kWh" },
+                        new { maxKwh = 650, rate = 0.075, description = "EEI Tier 10: 601-650 kWh at -0.075 RM/kWh" },
+                        new { maxKwh = 700, rate = 0.055, description = "EEI Tier 11: 651-700 kWh at -0.055 RM/kWh" },
+                        new { maxKwh = 750, rate = 0.045, description = "EEI Tier 12: 701-750 kWh at -0.045 RM/kWh" },
+                        new { maxKwh = 800, rate = 0.04, description = "EEI Tier 13: 751-800 kWh at -0.04 RM/kWh" },
+                        new { maxKwh = 850, rate = 0.025, description = "EEI Tier 14: 801-850 kWh at -0.025 RM/kWh" },
+                        new { maxKwh = 900, rate = 0.01, description = "EEI Tier 15: 851-900 kWh at -0.01 RM/kWh" },
+                        new { maxKwh = 1000, rate = 0.005, description = "EEI Tier 16: 901-1000 kWh at -0.005 RM/kWh" }
+                    },
 
                     serviceTax = new { rate = 0.08, threshold = 600, description = "Service Tax (8%)" },
                     reFund = new { rate = 0.016, threshold = 300, description = "RE Fund (KWTBB 1.6%)" },
